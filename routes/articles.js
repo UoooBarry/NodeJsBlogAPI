@@ -50,6 +50,20 @@ router.delete('/:id/',verifyToken, (req,res) => {
           })
           .catch( err => res.json({message: 'error'}));
 })
+
+router.patch('/:id/',verifyToken, (req,res) => {
+  Article.findByIdAndUpdate({_id: req.params.id},{
+    content: req.body.content
+  })
+    .exec()
+    .then(articles => {
+      res.json({
+        message: 'success'
+      })
+    })
+    .catch( err => res.json({message: 'error'}));
+})
+
 //format of token
 //Authorization: test <access_token>
 //verify Token
