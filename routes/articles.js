@@ -4,21 +4,15 @@ var Article = require('../models/article');
 var router = express.Router();
 
 router.post('/post', verifyToken, (req,res) => {
-    JWT.verify(req.token, 'secretkey', (err, authData) => {
-      if(err){
-        res.sendStatus(403);
-      }else{
-        Article.create({
+      Article.create({
           title: req.body.title,
-          author: authData.user.name,
+          author: req.user.name,
           content: req.body.content,
-          created_at: new Date()
+          created_at: new Date().toDateString()
         }).then(res.json({
           message: 'Post created',
         }))
-        .catch(err => console.log(err))      
-      }
-    });
+        .catch(err => console.log(err))
 });
 
 router.get('/', (req,res) => {
@@ -74,10 +68,16 @@ function verifyToken(req,res,next){
     if(typeof header !== 'undefined'){
       //Spilt at the space 
       var token = header.split(' ')[1];
-      // Set the token
-      req.token = token;
-      // Next
-      next();
+      JWT.verify(token,process.env.ACCESS_TOKEN_SECRET, (err, data) => {
+        if(err){
+          console.log(err);
+          return res.sendStatus(403);
+        } 
+         // Set the token
+        req.user = data.user;
+        // Next
+        next();
+      });
     }else{
       console.log('auth err');
       //Forbidden
